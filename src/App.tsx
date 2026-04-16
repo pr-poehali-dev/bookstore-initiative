@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Book } from '@/data/books';
 import Navbar from '@/components/Navbar';
+import BookModal from '@/components/BookModal';
 import HomePage from '@/pages/HomePage';
 import CatalogPage from '@/pages/CatalogPage';
 import AboutPage from '@/pages/AboutPage';
@@ -17,6 +18,7 @@ interface CartItem extends Book {
 export default function App() {
   const [page, setPage] = useState('home');
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [modalBook, setModalBook] = useState<Book | null>(null);
 
   const addToCart = (book: Book) => {
     setCart(prev => {
@@ -44,12 +46,13 @@ export default function App() {
       <Toaster />
       <div className="min-h-screen bg-background">
         <Navbar currentPage={page} onNavigate={setPage} cartCount={cartCount} />
-        {page === 'home' && <HomePage onNavigate={setPage} onAddToCart={addToCart} />}
-        {page === 'catalog' && <CatalogPage onAddToCart={addToCart} />}
+        {page === 'home' && <HomePage onNavigate={setPage} onAddToCart={addToCart} onOpenModal={setModalBook} />}
+        {page === 'catalog' && <CatalogPage onAddToCart={addToCart} onOpenModal={setModalBook} />}
         {page === 'about' && <AboutPage onNavigate={setPage} />}
         {page === 'blog' && <BlogPage />}
         {page === 'contacts' && <ContactsPage />}
         {page === 'cart' && <CartPage items={cart} onUpdateQty={updateQty} onRemove={removeItem} onNavigate={setPage} />}
+        <BookModal book={modalBook} onClose={() => setModalBook(null)} onAddToCart={addToCart} />
       </div>
     </TooltipProvider>
   );

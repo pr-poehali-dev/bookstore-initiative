@@ -4,11 +4,12 @@ import Icon from '@/components/ui/icon';
 interface BookCardProps {
   book: Book;
   onAddToCart: (book: Book) => void;
+  onOpenModal: (book: Book) => void;
 }
 
-export default function BookCard({ book, onAddToCart }: BookCardProps) {
+export default function BookCard({ book, onAddToCart, onOpenModal }: BookCardProps) {
   return (
-    <div className="book-card-hover bg-white rounded-2xl overflow-hidden shadow-sm border border-border group cursor-pointer">
+    <div onClick={() => onOpenModal(book)} className="book-card-hover bg-white rounded-2xl overflow-hidden shadow-sm border border-border group cursor-pointer">
       <div className={`${book.cover} h-52 flex items-end p-4 relative`}>
         {book.badge && (
           <span className="absolute top-3 right-3 bg-brand-orange text-white text-xs font-bold font-body px-2 py-1 rounded-full">
@@ -42,7 +43,7 @@ export default function BookCard({ book, onAddToCart }: BookCardProps) {
             )}
           </div>
           <button
-            onClick={() => onAddToCart(book)}
+            onClick={e => { e.stopPropagation(); onAddToCart(book); }}
             className="w-9 h-9 bg-brand-orange hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95"
           >
             <Icon name="Plus" size={18} />

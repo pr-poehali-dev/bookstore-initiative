@@ -5,11 +5,12 @@ import Icon from '@/components/ui/icon';
 interface HomePageProps {
   onNavigate: (page: string) => void;
   onAddToCart: (book: Book) => void;
+  onOpenModal: (book: Book) => void;
 }
 
 const MARQUEE_ITEMS = ['Новинки недели', 'Бестселлеры', 'Скидки до 40%', 'Быстрая доставка', 'Подарочные сертификаты', 'Клуб читателей'];
 
-export default function HomePage({ onNavigate, onAddToCart }: HomePageProps) {
+export default function HomePage({ onNavigate, onAddToCart, onOpenModal }: HomePageProps) {
   const featured = BOOKS.slice(0, 4);
 
   return (
@@ -98,7 +99,7 @@ export default function HomePage({ onNavigate, onAddToCart }: HomePageProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {featured.map((book, i) => (
             <div key={book.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
-              <BookCard book={book} onAddToCart={onAddToCart} />
+              <BookCard book={book} onAddToCart={onAddToCart} onOpenModal={onOpenModal} />
             </div>
           ))}
         </div>

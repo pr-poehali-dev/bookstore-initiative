@@ -5,9 +5,10 @@ import Icon from '@/components/ui/icon';
 
 interface CatalogPageProps {
   onAddToCart: (book: Book) => void;
+  onOpenModal: (book: Book) => void;
 }
 
-export default function CatalogPage({ onAddToCart }: CatalogPageProps) {
+export default function CatalogPage({ onAddToCart, onOpenModal }: CatalogPageProps) {
   const [search, setSearch] = useState('');
   const [activeGenre, setActiveGenre] = useState('Все');
   const [sortBy, setSortBy] = useState('default');
@@ -96,7 +97,7 @@ export default function CatalogPage({ onAddToCart }: CatalogPageProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {filtered.map((book, i) => (
               <div key={book.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.05}s` }}>
-                <BookCard book={book} onAddToCart={onAddToCart} />
+                <BookCard book={book} onAddToCart={onAddToCart} onOpenModal={onOpenModal} />
               </div>
             ))}
           </div>
