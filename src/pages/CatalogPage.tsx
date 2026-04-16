@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
-import { Book, BOOKS, GENRES } from '@/data/books';
+import { useState, useMemo, useEffect } from 'react';
+import { Book, GENRES } from '@/data/books';
 import BookCard from '@/components/BookCard';
 import Icon from '@/components/ui/icon';
+import func2url from '../../backend/func2url.json';
 
 interface CatalogPageProps {
   onAddToCart: (book: Book) => void;
@@ -9,14 +10,30 @@ interface CatalogPageProps {
 }
 
 export default function CatalogPage({ onAddToCart, onOpenModal }: CatalogPageProps) {
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeGenre, setActiveGenre] = useState('Все');
   const [sortBy, setSortBy] = useState('default');
 
+  useEffect(() => {
+    setLoading(true);
+    fetch(func2url.books)
+      .then(r => r.json())
+      .then(data => {
+        const mapped = data.books.map((b: Record<string, unknown>) => ({
+          ...b,
+          oldPrice: b.old_price,
+        }));
+        setBooks(mapped);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
   const filtered = useMemo(() => {
-    let result = BOOKS.filter(book => {
+    let result = books.filter(book => {
       const q = search.toLowerCase();
-      const matchSearch = !q || book.title.toLowerCase().includes(q) || book.author.toLowerCase().includes(q) || book.genre.toLowerCase().includes(q);
+      const matchSearch = !q || book.title.toLowerCase().includes(q) || book.author.toLowerCase().includes(q) || (book.genre ?? '').toLowerCase().includes(q);
       const matchGenre = activeGenre === 'Все' || book.genre === activeGenre;
       return matchSearch && matchGenre;
     });
@@ -26,7 +43,7 @@ export default function CatalogPage({ onAddToCart, onOpenModal }: CatalogPagePro
     if (sortBy === 'rating') result = [...result].sort((a, b) => b.rating - a.rating);
 
     return result;
-  }, [search, activeGenre, sortBy]);
+  }, [books, search, activeGenre, sortBy]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -36,7 +53,6 @@ export default function CatalogPage({ onAddToCart, onOpenModal }: CatalogPagePro
           <p className="font-body text-brand-orange font-semibold text-sm uppercase tracking-widest mb-2">Магазин</p>
           <h1 className="font-display text-5xl sm:text-6xl font-bold text-white mb-8">Каталог книг</h1>
 
-          {/* Search */}
           <div className="relative max-w-xl">
             <Icon name="Search" size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
             <input
@@ -86,30 +102,49 @@ export default function CatalogPage({ onAddToCart, onOpenModal }: CatalogPagePro
           </select>
         </div>
 
-        {/* Results count */}
-        <p className="font-body text-muted-foreground text-sm mb-6">
-          {filtered.length === 0 ? 'Ничего не найдено' : `Найдено ${filtered.length} книг`}
-          {search && <span className="text-brand-dark font-medium"> по запросу «{search}»</span>}
-        </p>
-
-        {/* Books grid */}
-        {filtered.length > 0 ? (
+        {/* Loading */}
+        {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filtered.map((book, i) => (
-              <div key={book.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.05}s` }}>
-                <BookCard book={book} onAddToCart={onAddToCart} onOpenModal={onOpenModal} />
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl overflow-hidden border border-border animate-pulse">
+                <div className="h-52 bg-gray-200" />
+                <div className="p-4 space-y-3">
+                  <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  <div className="h-3 bg-gray-200 rounded w-1/2" />
+                  <div className="h-6 bg-gray-200 rounded w-1/3" />
+                </div>
               </div>
             ))}
           </div>
-        ) : (
-          <div className="text-center py-24">
-            <div className="text-6xl mb-4">📚</div>
-            <h3 className="font-display text-2xl font-semibold text-brand-dark mb-2">Книги не найдены</h3>
-            <p className="font-body text-muted-foreground">Попробуйте изменить запрос или выбрать другой жанр</p>
-            <button onClick={() => { setSearch(''); setActiveGenre('Все'); }} className="mt-6 bg-brand-orange text-white font-body font-semibold px-6 py-3 rounded-xl hover:bg-orange-600 transition-colors">
-              Сбросить фильтры
-            </button>
-          </div>
+        )}
+
+        {/* Results */}
+        {!loading && (
+          <>
+            <p className="font-body text-muted-foreground text-sm mb-6">
+              {filtered.length === 0 ? 'Ничего не найдено' : `Найдено ${filtered.length} книг`}
+              {search && <span className="text-brand-dark font-medium"> по запросу «{search}»</span>}
+            </p>
+
+            {filtered.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {filtered.map((book, i) => (
+                  <div key={book.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.05}s` }}>
+                    <BookCard book={book} onAddToCart={onAddToCart} onOpenModal={onOpenModal} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-24">
+                <div className="text-6xl mb-4">📚</div>
+                <h3 className="font-display text-2xl font-semibold text-brand-dark mb-2">Книги не найдены</h3>
+                <p className="font-body text-muted-foreground">Попробуйте изменить запрос или выбрать другой жанр</p>
+                <button onClick={() => { setSearch(''); setActiveGenre('Все'); }} className="mt-6 bg-brand-orange text-white font-body font-semibold px-6 py-3 rounded-xl hover:bg-orange-600 transition-colors">
+                  Сбросить фильтры
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -1,6 +1,8 @@
-import { Book, BOOKS, BLOG_POSTS } from '@/data/books';
+import { useState, useEffect } from 'react';
+import { Book, BLOG_POSTS } from '@/data/books';
 import BookCard from '@/components/BookCard';
 import Icon from '@/components/ui/icon';
+import func2url from '../../backend/func2url.json';
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
@@ -11,7 +13,19 @@ interface HomePageProps {
 const MARQUEE_ITEMS = ['Новинки недели', 'Бестселлеры', 'Скидки до 40%', 'Быстрая доставка', 'Подарочные сертификаты', 'Клуб читателей'];
 
 export default function HomePage({ onNavigate, onAddToCart, onOpenModal }: HomePageProps) {
-  const featured = BOOKS.slice(0, 4);
+  const [featured, setFeatured] = useState<Book[]>([]);
+
+  useEffect(() => {
+    fetch(func2url.books)
+      .then(r => r.json())
+      .then(data => {
+        const mapped = data.books.slice(0, 4).map((b: Record<string, unknown>) => ({
+          ...b,
+          oldPrice: b.old_price,
+        }));
+        setFeatured(mapped);
+      });
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -97,11 +111,23 @@ export default function HomePage({ onNavigate, onAddToCart, onOpenModal }: HomeP
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featured.map((book, i) => (
-            <div key={book.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
-              <BookCard book={book} onAddToCart={onAddToCart} onOpenModal={onOpenModal} />
-            </div>
-          ))}
+          {featured.length === 0
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl overflow-hidden border border-border animate-pulse">
+                  <div className="h-52 bg-gray-200" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                    <div className="h-3 bg-gray-200 rounded w-1/2" />
+                    <div className="h-6 bg-gray-200 rounded w-1/3" />
+                  </div>
+                </div>
+              ))
+            : featured.map((book, i) => (
+                <div key={book.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                  <BookCard book={book} onAddToCart={onAddToCart} onOpenModal={onOpenModal} />
+                </div>
+              ))
+          }
         </div>
       </section>
 

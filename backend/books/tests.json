@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Получить все книги",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {"books": []},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Поиск по жанру Роман",
+      "method": "GET",
+      "path": "/?genre=Роман",
+      "expectedStatus": 200,
+      "expectedBody": {"books": []},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
